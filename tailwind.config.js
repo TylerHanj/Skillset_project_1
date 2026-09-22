@@ -1,0 +1,134 @@
+/** @type {import('tailwindcss').Config} */
+export default {
+  darkMode: 'class',
+  content: ['./index.html', './src/**/*.{js,ts,jsx,tsx}'],
+  theme: {
+    screens: {
+      xs: '375px',
+      sm: '430px',
+      md: '768px',
+      lg: '1024px',
+      xl: '1280px',
+      '2xl': '1440px',
+    },
+    extend: {
+      colors: {
+        canvas: 'var(--color-canvas)',
+        page: 'var(--color-page)',
+        charcoal: 'var(--color-charcoal)',
+        slate: 'var(--color-slate)',
+        muted: {
+          DEFAULT: 'var(--color-muted)',
+          2: 'var(--color-muted-2)',
+          3: 'var(--color-muted-3)',
+          4: 'var(--color-muted-4)',
+        },
+        border: {
+          DEFAULT: 'var(--color-border)',
+          hairline: 'var(--color-border-hairline)',
+          ui: 'var(--color-border-ui)',
+          row: 'var(--color-border-row)',
+          strong: 'var(--color-border-strong)',
+        },
+        surface: {
+          DEFAULT: 'var(--color-surface)',
+          2: 'var(--color-surface-2)',
+          3: 'var(--color-surface-3)',
+        },
+        ink: 'var(--color-ink)',
+        'blue-ink': 'var(--color-blue-ink)',
+        accent: {
+          red: 'var(--color-accent-red)',
+        },
+        success: 'var(--color-success)',
+        progress: 'var(--color-progress)',
+        overlay: 'var(--color-overlay)',
+      },
+      fontFamily: {
+        display: ['"Work Sans"', 'sans-serif'],
+        body: ['Inter', 'sans-serif'],
+        sans: ['Inter', 'sans-serif'],
+      },
+      fontWeight: {
+        light: '300',
+        normal: '400',
+        medium: '500',
+        semibold: '600',
+        bold: '700',
+        extrabold: '800',
+      },
+      fontSize: {
+        overline: ['10px', { lineHeight: '1.2', letterSpacing: '0.12em', fontWeight: '600' }],
+        micro: ['9px', { lineHeight: '1.2', letterSpacing: '0.08em', fontWeight: '600' }],
+        caption: ['11px', { lineHeight: '1.4', letterSpacing: '0' }],
+        body: ['13px', { lineHeight: '1.5', letterSpacing: '0' }],
+        heading: ['18px', { lineHeight: '1.2', letterSpacing: '-0.02em', fontWeight: '700' }],
+        title: ['24px', { lineHeight: '1.1', letterSpacing: '-0.03em', fontWeight: '700' }],
+        display: ['26px', { lineHeight: '1.1', letterSpacing: '-0.03em', fontWeight: '700' }],
+        kpi: ['28px', { lineHeight: '1', letterSpacing: '-0.03em', fontWeight: '700' }],
+      },
+      letterSpacing: {
+        tightest: '-0.03em',
+        tighter: '-0.02em',
+        label: '0.06em',
+        wide: '0.08em',
+        wider: '0.1em',
+        widest: '0.12em',
+        overline: '0.14em',
+      },
+      borderRadius: {
+        none: '0',
+        hair: '1px',
+        DEFAULT: '2px',
+        sm: '2px',
+        md: '2px',
+        lg: '4px',
+        pill: '999px',
+      },
+      borderWidth: {
+        hairline: '0.5px',
+        DEFAULT: '1px',
+        2: '2px',
+        3: '3px',
+      },
+      boxShadow: {
+        none: 'none',
+        hairline: '0 0 0 0.5px var(--color-border)',
+        ring: '0 0 0 1px var(--color-frame-ring)',
+        device:
+          '0 0 0 1px var(--color-frame-ring), 0 20px 60px var(--color-device-shadow)',
+        overlay: '0 12px 40px var(--color-device-shadow)',
+        sheet: '0 -8px 32px var(--color-sheet-shadow)',
+      },
+      maxWidth: {
+        device: '430px',
+      },
+      width: {
+        device: '430px',
+      },
+      height: {
+        tabbar: '60px',
+        accentbar: '3px',
+      },
+      spacing: {
+        4.5: '18px',
+        13: '52px',
+        15: '60px',
+        device: '430px',
+      },
+      minHeight: {
+        dvh: '100dvh',
+      },
+      zIndex: {
+        tabbar: '40',
+        sheet: '50',
+        overlay: '60',
+      },
+      transitionDuration: {
+        fast: '120ms',
+        DEFAULT: '180ms',
+      },
+    },
+  },
+  plugins: [],
+};
