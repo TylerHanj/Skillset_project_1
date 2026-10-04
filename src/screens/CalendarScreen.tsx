@@ -2,7 +2,7 @@ import { useMemo, useState } from 'react';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { CalendarTaskRow } from '../components/CalendarTaskRow';
 import { Header } from '../components/Header';
-import { buildMonthGrid, MONTHS_LONG, toIsoDate, WEEKDAYS_SHORT } from '../lib/calendar';
+import { buildMonthGrid, MONTHS_LONG, WEEKDAYS_SHORT } from '../lib/calendar';
 import type { Task } from '../types';
 
 interface CalendarScreenProps {

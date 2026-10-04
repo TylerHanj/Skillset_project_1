@@ -1,6 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
 import { QUICK_PROMPTS } from '../mockData';
-import { formatClock } from '../lib/calendar';
 import type { ChatMessage } from '../types';
 
 interface AIChatBoxProps {

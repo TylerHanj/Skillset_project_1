@@ -28,10 +28,9 @@ export interface ChatMessage {
 }
 
 export interface Course {
-  code: string;
-  name: string;
-  grade: string;
-  tasks: number;
+  subject: string;
+  open: number;
+  total: number;
 }
 
 export interface Kpi {
@@ -48,14 +47,6 @@ export interface SettingItem {
   toggle?: boolean;
   on?: boolean;
   danger?: boolean;
-}
-
-export interface StudentProfile {
-  firstName: string;
-  lastName: string;
-  year: string;
-  major: string;
-  institution: string;
 }
 
 export interface NewTaskInput {
