@@ -1,5 +1,6 @@
 import { Calendar, List, MessageSquareText, User } from 'lucide-react';
 import type { NavTab } from '../types';
+import { useLanguage } from '../lib/language';
 
 interface NavItem {
   id: NavTab;
@@ -20,6 +21,7 @@ const NAV_ITEMS: NavItem[] = [
 ];
 
 export function BottomNav({ activeTab, onChange }: BottomNavProps) {
+  const { t } = useLanguage();
   return (
     <nav
       aria-label="Primary"
@@ -51,7 +53,7 @@ export function BottomNav({ activeTab, onChange }: BottomNavProps) {
                 active ? 'text-charcoal' : 'text-muted-3'
               }`}
             >
-              {item.label}
+              {t(item.label)}
             </span>
           </button>
         );

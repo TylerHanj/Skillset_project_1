@@ -1,6 +1,7 @@
 import { Check, ChevronRight, Clock } from 'lucide-react';
 import { STATUS_CYCLE } from '../mockData';
 import type { Task, TaskStatus } from '../types';
+import { useLanguage } from '../lib/language';
 
 interface TaskCardProps {
   task: Task;
@@ -25,6 +26,7 @@ function statusDotClass(status: TaskStatus): string {
 }
 
 export function TaskCard({ task, last, onStatusChange }: TaskCardProps) {
+  const { t } = useLanguage();
   const done = task.status === 'Done';
 
   function cycleStatus(): void {
@@ -70,7 +72,7 @@ export function TaskCard({ task, last, onStatusChange }: TaskCardProps) {
         >
           <span className={`h-[5px] w-[5px] shrink-0 rounded-pill ${statusDotClass(task.status)}`} />
           <span className="font-display text-[8px] font-bold tracking-[0.09em]">
-            {task.status.toUpperCase()}
+            {t(task.status).toUpperCase()}
           </span>
           <ChevronRight size={10} className="opacity-50" aria-hidden />
         </button>

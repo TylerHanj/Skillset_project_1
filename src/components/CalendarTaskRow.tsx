@@ -1,5 +1,6 @@
 import { Clock } from 'lucide-react';
 import type { Task, TaskStatus } from '../types';
+import { useLanguage } from '../lib/language';
 
 interface CalendarTaskRowProps {
   task: Task;
@@ -13,6 +14,7 @@ function statusColor(status: TaskStatus): string {
 }
 
 export function CalendarTaskRow({ task, last }: CalendarTaskRowProps) {
+  const { t } = useLanguage();
   const done = task.status === 'Done';
 
   return (
@@ -28,7 +30,7 @@ export function CalendarTaskRow({ task, last }: CalendarTaskRowProps) {
             done ? 'opacity-50' : ''
           }`}
         >
-          {task.status.toUpperCase()}
+          {t(task.status).toUpperCase()}
         </span>
       </div>
       <p

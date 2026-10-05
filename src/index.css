@@ -196,12 +196,10 @@
     min-height: 100dvh;
     width: 100%;
     background: var(--color-canvas);
-    padding: clamp(0px, 3vw, 32px) clamp(0px, 2vw, 24px);
   }
 
   .app-frame {
     width: 100%;
-    max-width: var(--app-max-width);
     height: 100dvh;
     max-height: 100dvh;
     background: var(--color-page);

@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { QUICK_PROMPTS } from '../mockData';
 import type { ChatMessage } from '../types';
+import { useLanguage } from '../lib/language';
 
 interface AIChatBoxProps {
   messages: ChatMessage[];
@@ -56,6 +57,7 @@ function MessageBubble({ message }: MessageBubbleProps) {
 }
 
 export function AIChatBox({ messages, onSend, loading }: AIChatBoxProps) {
+  const { t } = useLanguage();
   const [input, setInput] = useState('');
   const bottomRef = useRef<HTMLDivElement>(null);
 
@@ -87,7 +89,7 @@ export function AIChatBox({ messages, onSend, loading }: AIChatBoxProps) {
                   style={{ animationDelay: `${index * 0.2}s` }}
                 />
               ))}
-              <span className="sr-only">Assistant is typing</span>
+              <span className="sr-only">{t('Assistant is typing')}</span>
             </div>
           </div>
         ) : null}
@@ -97,12 +99,12 @@ export function AIChatBox({ messages, onSend, loading }: AIChatBoxProps) {
       <div className="flex shrink-0 gap-2 overflow-x-auto border-t border-row px-6 pb-2 pt-3">
         {QUICK_PROMPTS.map((prompt) => (
           <button
-            key={prompt}
+            key={t(prompt)}
             type="button"
             onClick={() => submit(prompt)}
             className="whitespace-nowrap rounded-sm border-hairline border-border bg-transparent px-3 py-1.5 font-body text-[11px] font-normal text-slate"
           >
-            {prompt}
+            {t(prompt)}
           </button>
         ))}
       </div>
@@ -129,7 +131,7 @@ export function AIChatBox({ messages, onSend, loading }: AIChatBoxProps) {
                 submit(input);
               }
             }}
-            placeholder="Ask anything about your studies..."
+            placeholder={t('Ask anything about your studies...')}
             className="max-h-24 flex-1 resize-none bg-transparent font-body text-[13px] leading-normal text-charcoal outline-none"
           />
         </div>

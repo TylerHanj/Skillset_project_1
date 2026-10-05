@@ -4,12 +4,14 @@ import { CalendarTaskRow } from '../components/CalendarTaskRow';
 import { Header } from '../components/Header';
 import { buildMonthGrid, MONTHS_LONG, WEEKDAYS_SHORT } from '../lib/calendar';
 import type { Task } from '../types';
+import { useLanguage } from '../lib/language';
 
 interface CalendarScreenProps {
   tasks: Task[];
 }
 
 export function CalendarScreen({ tasks }: CalendarScreenProps) {
+  const { t } = useLanguage();
   const today = new Date();
   const [year, setYear] = useState(today.getFullYear());
   const [month, setMonth] = useState(today.getMonth());
@@ -60,13 +62,13 @@ export function CalendarScreen({ tasks }: CalendarScreenProps) {
   return (
     <main className="flex min-h-0 flex-1 flex-col bg-page">
       <Header
-        overline="ACADEMIC CALENDAR"
+        overline={t('ACADEMIC CALENDAR')}
         title={`${MONTHS_LONG[month]} ${year}`}
         trailing={
           <div className="flex items-center gap-1">
             <button
               type="button"
-              aria-label="Previous month"
+              aria-label={t('Previous month')}
               onClick={prevMonth}
               className="flex h-[30px] w-[30px] items-center justify-center rounded-sm border-hairline border-muted-4"
             >
@@ -74,7 +76,7 @@ export function CalendarScreen({ tasks }: CalendarScreenProps) {
             </button>
             <button
               type="button"
-              aria-label="Next month"
+              aria-label={t('Next month')}
               onClick={nextMonth}
               className="flex h-[30px] w-[30px] items-center justify-center rounded-sm border-hairline border-muted-4"
             >
@@ -84,7 +86,7 @@ export function CalendarScreen({ tasks }: CalendarScreenProps) {
         }
       />
 
-      <section className="shrink-0 border-b border-ui px-5 pb-4 pt-3" aria-label="Month grid">
+      <section className="shrink-0 border-b border-ui px-5 pb-4 pt-3" aria-label={t('Month grid')}>
         <div className="mb-2 grid grid-cols-7">
           {WEEKDAYS_SHORT.map((day, index) => (
             <span
@@ -137,11 +139,11 @@ export function CalendarScreen({ tasks }: CalendarScreenProps) {
         </div>
       </section>
 
-      <section className="flex shrink-0 gap-5 border-b border-row px-6 py-2.5" aria-label="Month summary">
+      <section className="flex shrink-0 gap-5 border-b border-row px-6 py-2.5" aria-label={t('Month summary')}>
         {[
-          { label: 'TOTAL TASKS', value: monthTasks.length },
-          { label: 'DUE THIS WEEK', value: dueThisWeek },
-          { label: 'COMPLETED', value: monthTasks.filter((task) => task.status === 'Done').length },
+          { label: t('TOTAL TASKS'), value: monthTasks.length },
+          { label: t('DUE THIS WEEK'), value: dueThisWeek },
+          { label: t('COMPLETED'), value: monthTasks.filter((task) => task.status === 'Done').length },
         ].map((stat) => (
           <div key={stat.label}>
             <p className="font-display text-[8px] font-semibold tracking-wider text-muted-2">{stat.label}</p>
@@ -153,7 +155,7 @@ export function CalendarScreen({ tasks }: CalendarScreenProps) {
       <section className="min-h-0 flex-1 overflow-y-auto">
         {selectedDay === null ? (
           <p className="px-6 py-10 text-center font-display text-[13px] text-muted-4">
-            Select a day to view tasks
+            {t('Select a day to view tasks')}
           </p>
         ) : selectedTasks.length === 0 ? (
           <p className="px-6 py-10 text-center font-display text-[13px] text-muted-4">
