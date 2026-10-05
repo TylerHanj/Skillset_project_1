@@ -2,6 +2,7 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import type { Session } from '@supabase/supabase-js';
 import { supabase } from './lib/supabase';
 import { Register } from './screens/Register';
+import { LanguageProvider } from './lib/language';
 import { Login } from './screens/Login';
 
 import { AppShell } from './components/AppShell';
@@ -40,7 +41,7 @@ function welcomeMessage(name: string): ChatMessage {
   };
 }
 
-export default function App() {
+function AppContent() {
   const [session, setSession] = useState<Session | null>(null);
   const [authLoading, setAuthLoading] = useState<boolean>(true);
   const [showLogin, setShowLogin] = useState<boolean>(false);
@@ -204,16 +205,32 @@ export default function App() {
   // --- Нет сессии: только вход/регистрация ---
   if (!session) {
     return (
-      <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', minHeight: '100vh', fontFamily: 'sans-serif', padding: '20px' }}>
-        {showLogin ? <Login /> : <Register />}
-
-        <button
-          onClick={() => setShowLogin(!showLogin)}
-          style={{ marginTop: '15px', background: 'none', border: 'none', color: '#0070f3', cursor: 'pointer', textDecoration: 'underline' }}
-        >
-          {showLogin ? 'У меня еще нет аккаунта. Зарегистрироваться' : 'Уже есть аккаунт? Войти в систему'}
-        </button>
-      </div>
+      <AppShell>
+        <main className="app-content min-h-0 overflow-y-auto bg-page">
+          <div className="accent-bar" />
+          <div className="mx-auto flex min-h-full w-full max-w-device flex-col px-6 py-7 sm:px-8 sm:py-9">
+            <header className="flex shrink-0 items-center gap-3 border-b border-ui pb-5">
+              <span className="h-2.5 w-2.5 bg-accent-red" aria-hidden="true" />
+              <div>
+                <p className="font-display text-[10px] font-bold tracking-[0.16em] text-charcoal">EDU NAVIGATOR</p>
+                <p className="mt-0.5 font-body text-[10px] text-muted-2">AI STUDY PLANNER</p>
+              </div>
+            </header>
+            <div className="flex flex-1 items-center justify-center py-7">
+              {showLogin ? <Login /> : <Register />}
+            </div>
+            <footer className="shrink-0 border-t border-ui pt-5 text-center">
+              <p className="font-body text-[12px] text-slate">
+                {showLogin ? 'New to Skillset?' : 'Already have an account?'}
+              </p>
+              <button type="button" onClick={() => setShowLogin(!showLogin)}
+                className="mt-2 bg-transparent font-display text-[10px] font-bold tracking-widest text-charcoal underline decoration-accent-red decoration-2 underline-offset-4 hover:text-accent-red">
+                {showLogin ? 'CREATE AN ACCOUNT' : 'SIGN IN'}
+              </button>
+            </footer>
+          </div>
+        </main>
+      </AppShell>
     );
   }
 
@@ -221,7 +238,7 @@ export default function App() {
   if (dataLoading) {
     return (
       <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh', fontFamily: 'sans-serif', background: '#121212', color: '#fff' }}>
-        <h3>Загружаем ваши данные...</h3>
+        <h3>Loading your data...</h3>
       </div>
     );
   }
@@ -260,3 +277,5 @@ export default function App() {
     </AppShell>
   );
 }
+
+export default function App() { return <LanguageProvider><AppContent /></LanguageProvider>; }

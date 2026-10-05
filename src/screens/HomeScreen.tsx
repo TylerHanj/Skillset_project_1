@@ -4,6 +4,7 @@ import { Header } from '../components/Header';
 import { TaskList } from '../components/TaskList';
 import { formatHeaderDate } from '../lib/calendar';
 import { TASK_FILTERS } from '../mockData';
+import { useLanguage } from '../lib/language';
 import type { NewTaskInput, Task, TaskFilter, TaskStatus } from '../types';
 
 interface HomeScreenProps {
@@ -13,6 +14,7 @@ interface HomeScreenProps {
 }
 
 export function HomeScreen({ tasks, onAddTask, onStatusChange }: HomeScreenProps) {
+  const { t } = useLanguage();
   const [filter, setFilter] = useState<TaskFilter>('All');
   const [showModal, setShowModal] = useState(false);
 
@@ -26,10 +28,10 @@ export function HomeScreen({ tasks, onAddTask, onStatusChange }: HomeScreenProps
     <main className="relative flex min-h-0 flex-1 flex-col bg-page">
       <Header
         overline={formatHeaderDate(new Date())}
-        title="Today"
+        title={t('Today')}
         trailing={
           <div className="text-right">
-            <p className="font-display text-[9px] font-semibold tracking-wide text-muted-2">PENDING</p>
+            <p className="font-display text-[9px] font-semibold tracking-wide text-muted-2">{t('PENDING')}</p>
             <p className="font-display text-[22px] font-bold leading-none text-charcoal">{pendingCount}</p>
           </div>
         }
@@ -49,7 +51,7 @@ export function HomeScreen({ tasks, onAddTask, onStatusChange }: HomeScreenProps
                 : 'border-b-2 border-transparent text-muted-3'
             }`}
           >
-            {item.toUpperCase()}
+            {t(item).toUpperCase()}
           </button>
         ))}
       </div>

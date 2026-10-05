@@ -4,6 +4,7 @@ import { Header } from '../components/Header';
 import { KpiCard } from '../components/KpiCard';
 import { ToggleSwitch } from '../components/ToggleSwitch';
 import { toIsoDate } from '../lib/calendar';
+import { useLanguage } from '../lib/language';
 import type { Course, Kpi, ProfileSection, SettingItem, Task } from '../types';
 
 // Статистика считается из задач ТЕКУЩЕГО пользователя, а не из демо-данных.
@@ -49,6 +50,7 @@ interface ProfileScreenProps {
 
 export function ProfileScreen({ tasks, settings, onToggleSetting, session }: ProfileScreenProps) {
     const [section, setSection] = useState<ProfileSection>('kpis');
+    const { language, setLanguage, t } = useLanguage();
     const kpis = useMemo(() => buildKpis(tasks), [tasks]);
     const courses = useMemo(() => buildCourses(tasks), [tasks]);
 
@@ -71,7 +73,7 @@ export function ProfileScreen({ tasks, settings, onToggleSetting, session }: Pro
     return (
         <main className="flex h-full flex-col overflow-y-auto bg-page">
             <Header
-                overline="STUDENT PROFILE"
+                overline={t('STUDENT PROFILE')}
                 title={username} // <-- Реальный юзернейм вместо фейкового имени
                 subtitle={email}    // <-- Реальный email вместо фейкового вуза
                 trailing={
@@ -98,7 +100,7 @@ export function ProfileScreen({ tasks, settings, onToggleSetting, session }: Pro
                                 : 'border-b-2 border-transparent text-muted-2'
                         }`}
                     >
-                        {item.label}
+                        {t(item.label)}
                     </button>
                 ))}
             </div>
@@ -143,7 +145,7 @@ export function ProfileScreen({ tasks, settings, onToggleSetting, session }: Pro
             <div className="h-2 shrink-0 border-y border-row bg-surface-2" />
 
             <section className="shrink-0 px-6" aria-label="Settings">
-                <p className="type-label pb-2 pt-4">SETTINGS</p>
+                <p className="type-label pb-2 pt-4">{t('SETTINGS')}</p>
                 {settings.map((item) => (
                     <div
                         key={item.id}
@@ -154,13 +156,13 @@ export function ProfileScreen({ tasks, settings, onToggleSetting, session }: Pro
                     item.danger ? 'font-medium text-accent-red' : 'font-normal text-ink'
                 }`}
             >
-              {item.label}
+              {t(item.label)}
             </span>
                         {item.toggle ? (
                             <ToggleSwitch
                                 checked={Boolean(item.on)}
                                 onChange={() => onToggleSetting(item.id)}
-                                label={item.label}
+                                label={t(item.label)}
                             />
                         ) : (
                             <span className="font-body text-xs text-muted-2">{item.value}</span>
@@ -169,6 +171,7 @@ export function ProfileScreen({ tasks, settings, onToggleSetting, session }: Pro
                 ))}
 
                 {/* КНОПКА ВЫХОДА: стилизована под твою опасную (danger) кнопку в списке настроек */}
+                <div className="flex items-center justify-between border-b border-surface-3 py-3.5"><span className="font-body text-[13px] text-ink">{t('Language')}</span><select value={language} onChange={e=>setLanguage(e.target.value as 'en'|'ru')} aria-label={t('Language')} className="rounded-sm border border-ui bg-page px-2.5 py-2 font-body text-xs text-charcoal outline-none focus:border-charcoal"><option value="en">{t('English')}</option><option value="ru">{t('Russian')}</option></select></div>
                 <button
                     type="button"
                     onClick={handleLogout}
