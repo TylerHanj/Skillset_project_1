@@ -2,12 +2,14 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import type { Session } from '@supabase/supabase-js';
 import { supabase } from './lib/supabase';
 import { Register } from './screens/Register';
-import { LanguageProvider } from './lib/language';
+import { LanguageProvider, useLanguage } from './lib/language';
 import { Login } from './screens/Login';
 
 import { AppShell } from './components/AppShell';
 import { BottomNav } from './components/BottomNav';
 import { formatClock } from './lib/calendar';
+import { askGemini } from './lib/gemini';
+import { localReply } from './lib/localReply';
 import {
   DEFAULT_PREFS,
   fetchMessages,
@@ -42,6 +44,7 @@ function welcomeMessage(name: string): ChatMessage {
 }
 
 function AppContent() {
+  const { language } = useLanguage();
   const [session, setSession] = useState<Session | null>(null);
   const [authLoading, setAuthLoading] = useState<boolean>(true);
   const [showLogin, setShowLogin] = useState<boolean>(false);
@@ -64,6 +67,13 @@ function AppContent() {
   // Текущий пользователь для отложенных колбэков (в замыкании userId может устареть).
   const userIdRef = useRef<string | undefined>(undefined);
   userIdRef.current = userId;
+  // История для контекста ИИ и защита от параллельных запросов (двойной клик / быстрый Enter).
+  const messagesRef = useRef<ChatMessage[]>([]);
+  messagesRef.current = messages;
+  const prefsRef = useRef<UserPrefs>(DEFAULT_PREFS);
+  prefsRef.current = prefs;
+  const chatBusyRef = useRef(false);
+  const chatAbortRef = useRef<AbortController | null>(null);
 
   // --- Сессия Supabase ---
   useEffect(() => {
@@ -88,6 +98,8 @@ function AppContent() {
     setTasks([]);
     setMessages([]);
     setPrefs(DEFAULT_PREFS);
+    chatAbortRef.current?.abort(); // отменяем незавершённый запрос ИИ предыдущего пользователя
+    chatBusyRef.current = false;
     setChatLoading(false);
     setDataError(null);
     setActiveTab('home');
@@ -147,7 +159,13 @@ function AppContent() {
     }
   }
 
-  function handleSendMessage(text: string): void {
+  async function handleSendMessage(text: string): Promise<void> {
+    // Пока ждём ответ — новые запросы не отправляем (ни одного лишнего обращения к API).
+    if (chatBusyRef.current) return;
+    chatBusyRef.current = true;
+
+    const history = messagesRef.current; // сообщения ДО текущего вопроса
+    const sendingUserId = userId;
     const userMessage: ChatMessage = {
       id: Date.now(),
       role: 'user',
@@ -158,22 +176,48 @@ function AppContent() {
     setChatLoading(true);
     insertMessage('user', text).catch(reportError);
 
-    const sendingUserId = userId;
-    window.setTimeout(() => {
-      // Если за это время пользователь вышел/сменился — ответ не показываем и не сохраняем.
-      if (sendingUserId !== userIdRef.current) return;
-      const pending = tasksRef.current.filter((task) => task.status !== 'Done').length;
-      const replyText = `Noted. You currently have ${pending} open task${pending === 1 ? '' : 's'}. I'll use your academic context to refine this once the LLM API is connected. For now: block 90 minutes for the highest-priority item, then review remaining deadlines tonight.`;
-      const aiMessage: ChatMessage = {
-        id: Date.now() + 1,
-        role: 'ai',
-        text: replyText,
-        time: formatClock(new Date()),
-      };
-      setMessages((prev) => [...prev, aiMessage]);
-      setChatLoading(false);
-      insertMessage('ai', replyText).catch(reportError);
-    }, 1200);
+    const controller = new AbortController();
+    chatAbortRef.current = controller;
+    const params = {
+      question: text,
+      history,
+      tasks: tasksRef.current,
+      userName: username,
+      language,
+    };
+
+    let replyText: string;
+    try {
+      if (prefsRef.current.aiMode) {
+        // askGemini сам переключает модели, ограничивает повторы и при любом сбое отдаёт локальный ответ.
+        replyText = (await askGemini({ ...params, signal: controller.signal })).text;
+      } else {
+        // «AI Study Mode» выключен — к Gemini не обращаемся вообще.
+        replyText = localReply(text, params.tasks, language, username);
+      }
+    } catch (error) {
+      if (controller.signal.aborted) return; // пользователь вышел/сменился — ответ не нужен
+      // Страховка: что бы ни случилось, пользователь получает ответ.
+      replyText = localReply(text, params.tasks, language, username);
+      console.warn('AI request failed, local reply used:', error);
+    } finally {
+      if (chatAbortRef.current === controller) chatAbortRef.current = null;
+      if (!controller.signal.aborted) {
+        chatBusyRef.current = false;
+        setChatLoading(false);
+      }
+    }
+
+    // Если за это время пользователь вышел/сменился — ответ не показываем и не сохраняем.
+    if (sendingUserId !== userIdRef.current) return;
+    const aiMessage: ChatMessage = {
+      id: Date.now() + 1,
+      role: 'ai',
+      text: replyText,
+      time: formatClock(new Date()),
+    };
+    setMessages((prev) => [...prev, aiMessage]);
+    insertMessage('ai', replyText).catch(reportError);
   }
 
   function handleToggleSetting(id: string): void {
