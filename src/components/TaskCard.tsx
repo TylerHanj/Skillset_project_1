@@ -2,11 +2,12 @@ import { Check, ChevronRight, Clock } from 'lucide-react';
 import { STATUS_CYCLE } from '../mockData';
 import type { Task, TaskStatus } from '../types';
 import { useLanguage } from '../lib/language';
+import { formatDuration } from '../lib/calendar';
 
 interface TaskCardProps {
   task: Task;
   last: boolean;
-  onStatusChange: (id: number, next: TaskStatus) => void;
+  onStatusChange: (id: string, next: TaskStatus) => void;
 }
 
 function statusBadgeClass(status: TaskStatus): string {
@@ -26,7 +27,7 @@ function statusDotClass(status: TaskStatus): string {
 }
 
 export function TaskCard({ task, last, onStatusChange }: TaskCardProps) {
-  const { t } = useLanguage();
+  const { language, t } = useLanguage();
   const done = task.status === 'Done';
 
   function cycleStatus(): void {
@@ -44,7 +45,7 @@ export function TaskCard({ task, last, onStatusChange }: TaskCardProps) {
       <div className="mb-1.5 flex items-center gap-[7px]">
         <button
           type="button"
-          aria-label={done ? `Mark ${task.title} as not done` : `Mark ${task.title} as done`}
+          aria-label={`${t(done ? 'Mark task as not done' : 'Mark task as done')}: ${task.title}`}
           aria-pressed={done}
           onClick={toggleDone}
           className={`flex h-[18px] w-[18px] shrink-0 items-center justify-center rounded-sm border ${
@@ -61,12 +62,12 @@ export function TaskCard({ task, last, onStatusChange }: TaskCardProps) {
             done ? 'text-muted-4' : 'text-[#888888]'
           }`}
         >
-          {task.subject}
+          {t(task.subject)}
         </p>
         <div className="flex-1" />
         <button
           type="button"
-          title="Tap to advance status"
+          title={t('Tap to advance status')}
           onClick={cycleStatus}
           className={`flex items-center gap-[5px] rounded-sm border px-2 py-[3px] ${statusBadgeClass(task.status)}`}
         >
@@ -92,8 +93,8 @@ export function TaskCard({ task, last, onStatusChange }: TaskCardProps) {
           {task.due}
         </span>
         <span className={`flex items-center gap-[5px] text-[10px] ${done ? 'text-muted-4' : 'text-[#888888]'}`}>
-          <span className="font-display text-[9px] font-semibold tracking-wide text-muted-4">EST</span>
-          {task.timeEst}
+          <span className="font-display text-[9px] font-semibold tracking-wide text-muted-4">{t('EST')}</span>
+          {formatDuration(task.timeEst, language)}
         </span>
       </div>
     </article>

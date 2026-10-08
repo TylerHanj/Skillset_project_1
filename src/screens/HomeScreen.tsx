@@ -1,5 +1,6 @@
 import { useMemo, useState } from 'react';
 import { AddTaskSheet } from '../components/AddTaskSheet';
+import { BrainDumpInput } from '../components/BrainDumpInput';
 import { Header } from '../components/Header';
 import { TaskList } from '../components/TaskList';
 import { formatHeaderDate } from '../lib/calendar';
@@ -10,10 +11,11 @@ import type { NewTaskInput, Task, TaskFilter, TaskStatus } from '../types';
 interface HomeScreenProps {
   tasks: Task[];
   onAddTask: (task: NewTaskInput) => void;
-  onStatusChange: (id: number, next: TaskStatus) => void;
+  onBrainDump: (tasks: Task[]) => Promise<void>;
+  onStatusChange: (id: string, next: TaskStatus) => void;
 }
 
-export function HomeScreen({ tasks, onAddTask, onStatusChange }: HomeScreenProps) {
+export function HomeScreen({ tasks, onAddTask, onBrainDump, onStatusChange }: HomeScreenProps) {
   const { t } = useLanguage();
   const [filter, setFilter] = useState<TaskFilter>('All');
   const [showModal, setShowModal] = useState(false);
@@ -37,7 +39,7 @@ export function HomeScreen({ tasks, onAddTask, onStatusChange }: HomeScreenProps
         }
       />
 
-      <div className="flex gap-[18px] overflow-x-auto px-6 pt-3.5" role="tablist" aria-label="Task filters">
+      <div className="flex gap-[18px] overflow-x-auto px-6 pt-3.5" role="tablist" aria-label={t('Task filters')}>
         {TASK_FILTERS.map((item) => (
           <button
             key={item}
@@ -60,6 +62,10 @@ export function HomeScreen({ tasks, onAddTask, onStatusChange }: HomeScreenProps
         tasks={filtered}
         onStatusChange={onStatusChange}
         onAddClick={() => setShowModal(true)}
+        topContent={<BrainDumpInput onTasksParsed={async (parsedTasks) => {
+          await onBrainDump(parsedTasks);
+          setFilter('All');
+        }} />}
       />
 
       <AddTaskSheet

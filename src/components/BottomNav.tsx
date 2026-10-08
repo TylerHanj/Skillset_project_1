@@ -24,7 +24,7 @@ export function BottomNav({ activeTab, onChange }: BottomNavProps) {
   const { t } = useLanguage();
   return (
     <nav
-      aria-label="Primary"
+      aria-label={t('Primary')}
       className="grid h-tabbar shrink-0 grid-cols-4 border-t border-ui bg-page"
     >
       {NAV_ITEMS.map((item) => {

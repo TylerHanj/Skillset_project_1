@@ -1,24 +1,33 @@
 import { formatClock } from './calendar';
 import { supabase } from './supabase';
-import type { ChatMessage, ChatRole, NewTaskInput, Task, TaskStatus } from '../types';
+import type { ChatMessage, ChatRole, NewTaskInput, Task, TaskCategory, TaskStatus } from '../types';
 
 // ---------- Задачи ----------
 
 interface TaskRow {
-  id: number;
+  id: number | string;
   subject: string;
   title: string;
   due: string;
-  due_date: string;
+  due_date: string | null;
   due_time: string;
   status: TaskStatus;
   urgent: boolean;
   time_est: string;
+  category?: TaskCategory;
+  has_time?: boolean;
+  is_completed?: boolean;
+  created_at?: string;
+}
+
+function categoryFor(row: TaskRow): TaskCategory {
+  if (row.category === 'study' || row.category === 'personal' || row.category === 'general') return row.category;
+  return row.subject === 'STUDY' ? 'study' : row.subject === 'PERSONAL' ? 'personal' : 'general';
 }
 
 function rowToTask(row: TaskRow): Task {
   return {
-    id: row.id,
+    id: String(row.id),
     subject: row.subject,
     title: row.title,
     due: row.due,
@@ -27,6 +36,10 @@ function rowToTask(row: TaskRow): Task {
     status: row.status,
     urgent: row.urgent,
     timeEst: row.time_est,
+    category: categoryFor(row),
+    hasTime: row.has_time ?? Boolean(row.due_time),
+    isCompleted: row.is_completed ?? row.status === 'Done',
+    createdAt: row.created_at ?? new Date().toISOString(),
   };
 }
 
@@ -34,6 +47,8 @@ function rowToTask(row: TaskRow): Task {
 export async function fetchTasks(): Promise<Task[]> {
   const { data, error } = await supabase
     .from('tasks')
+    // Keep this query compatible with the currently deployed table. The enriched
+    // Task fields are derived from the legacy columns until the migration is run.
     .select('id, subject, title, due, due_date, due_time, status, urgent, time_est')
     .order('due_date', { ascending: true })
     .order('id', { ascending: true });
@@ -61,8 +76,11 @@ export async function insertTask(input: NewTaskInput): Promise<Task> {
   return rowToTask(data as TaskRow);
 }
 
-export async function updateTaskStatus(id: number, status: TaskStatus): Promise<void> {
-  const { error } = await supabase.from('tasks').update({ status }).eq('id', id);
+export async function updateTaskStatus(id: string, status: TaskStatus): Promise<void> {
+  const { error } = await supabase
+    .from('tasks')
+    .update({ status })
+    .eq('id', id);
   if (error) throw error;
 }
 

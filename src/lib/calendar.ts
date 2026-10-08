@@ -30,6 +30,39 @@ export const MONTHS_LONG: readonly string[] = [
   'December',
 ];
 
+type AppLanguage = 'en' | 'ru';
+
+function localeFor(language: AppLanguage): string {
+  return language === 'ru' ? 'ru-RU' : 'en-US';
+}
+
+export function formatMonthName(year: number, month: number, language: AppLanguage, style: 'short' | 'long' = 'long'): string {
+  return new Intl.DateTimeFormat(localeFor(language), { month: style, year: 'numeric' }).format(new Date(year, month, 1));
+}
+
+export function formatWeekdays(language: AppLanguage): string[] {
+  const monday = new Date(2024, 0, 1);
+  return Array.from({ length: 7 }, (_, index) =>
+    new Intl.DateTimeFormat(localeFor(language), { weekday: 'narrow' }).format(new Date(2024, 0, monday.getDate() + index)),
+  );
+}
+
+export function formatTimeValue(hour: number, minute: number, language: AppLanguage): string {
+  return new Intl.DateTimeFormat(localeFor(language), {
+    hour: 'numeric',
+    minute: '2-digit',
+    hour12: language === 'en',
+  }).format(new Date(2024, 0, 1, hour, minute));
+}
+
+export function formatDuration(value: string, language: AppLanguage): string {
+  if (language === 'en') return value;
+  const match = /^(?:(\d+)h\s*)?(?:(\d+)m)?$/.exec(value);
+  if (!match) return value;
+  const [, hours, minutes] = match;
+  return [hours ? `${hours} ч` : '', minutes ? `${minutes} мин` : ''].filter(Boolean).join(' ');
+}
+
 export function buildMonthGrid(year: number, month: number): Array<number | null> {
   const firstDay = new Date(year, month, 1).getDay();
   const startOffset = firstDay === 0 ? 6 : firstDay - 1;
@@ -55,13 +88,15 @@ export function toIsoDate(year: number, month: number, day: number): string {
   return `${year}-${mm}-${dd}`;
 }
 
-export function formatDueLabel(year: number, month: number, day: number, time: string): string {
-  return `${MONTHS_SHORT[month]} ${day}, ${year}${time ? ` · ${time}` : ''}`;
+export function formatDueLabel(year: number, month: number, day: number, time: string, language: AppLanguage = 'en'): string {
+  const date = new Intl.DateTimeFormat(localeFor(language), { month: 'short', day: 'numeric', year: 'numeric' })
+    .format(new Date(year, month, day));
+  return `${date}${time ? ` · ${time}` : ''}`;
 }
 
-export function formatHeaderDate(date: Date): string {
+export function formatHeaderDate(date: Date, language: AppLanguage = 'en'): string {
   return date
-    .toLocaleDateString('en-US', {
+    .toLocaleDateString(localeFor(language), {
       weekday: 'long',
       month: 'short',
       day: 'numeric',

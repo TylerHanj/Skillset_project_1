@@ -145,15 +145,42 @@ function AppContent() {
     }
   }
 
-  async function handleStatusChange(id: number, next: TaskStatus): Promise<void> {
+  async function handleBrainDump(parsedTasks: Task[]): Promise<void> {
+    try {
+      const created = await Promise.all(
+        parsedTasks.map((task) =>
+          insertTask({
+            subject: task.subject,
+            title: task.title,
+            due: task.due,
+            dueDate: task.dueDate,
+            dueTime: task.dueTime,
+            status: task.status,
+            urgent: task.urgent,
+            timeEst: task.timeEst,
+            category: task.category,
+            hasTime: task.hasTime,
+            isCompleted: task.isCompleted,
+            createdAt: task.createdAt,
+          }),
+        ),
+      );
+      setTasks((previous) => [...created, ...previous]);
+    } catch (error) {
+      reportError(error);
+      throw error;
+    }
+  }
+
+  async function handleStatusChange(id: string, next: TaskStatus): Promise<void> {
     const previous = tasksRef.current.find((task) => task.id === id)?.status;
     // Оптимистично обновляем UI, при ошибке откатываем.
-    setTasks((prev) => prev.map((task) => (task.id === id ? { ...task, status: next } : task)));
+    setTasks((prev) => prev.map((task) => (task.id === id ? { ...task, status: next, isCompleted: next === 'Done' } : task)));
     try {
       await updateTaskStatus(id, next);
     } catch (error) {
       if (previous) {
-        setTasks((prev) => prev.map((task) => (task.id === id ? { ...task, status: previous } : task)));
+        setTasks((prev) => prev.map((task) => (task.id === id ? { ...task, status: previous, isCompleted: previous === 'Done' } : task)));
       }
       reportError(error);
     }
@@ -302,7 +329,12 @@ function AppContent() {
       ) : null}
       <div className="app-content">
         {activeTab === 'home' ? (
-          <HomeScreen tasks={tasks} onAddTask={handleAddTask} onStatusChange={handleStatusChange} />
+          <HomeScreen
+            tasks={tasks}
+            onAddTask={handleAddTask}
+            onBrainDump={handleBrainDump}
+            onStatusChange={handleStatusChange}
+          />
         ) : null}
         {activeTab === 'calendar' ? <CalendarScreen tasks={tasks} /> : null}
         {activeTab === 'chat' ? (

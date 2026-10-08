@@ -1,6 +1,7 @@
 import { Clock } from 'lucide-react';
 import type { Task, TaskStatus } from '../types';
 import { useLanguage } from '../lib/language';
+import { formatDuration } from '../lib/calendar';
 
 interface CalendarTaskRowProps {
   task: Task;
@@ -14,7 +15,7 @@ function statusColor(status: TaskStatus): string {
 }
 
 export function CalendarTaskRow({ task, last }: CalendarTaskRowProps) {
-  const { t } = useLanguage();
+  const { language, t } = useLanguage();
   const done = task.status === 'Done';
 
   return (
@@ -22,7 +23,7 @@ export function CalendarTaskRow({ task, last }: CalendarTaskRowProps) {
       <div className="mb-[5px] flex items-center gap-2">
         {task.urgent ? <span className="h-1.5 w-1.5 shrink-0 rounded-pill bg-accent-red" /> : null}
         <p className={`font-display text-[9px] font-bold tracking-widest ${done ? 'text-muted-4' : 'text-[#888888]'}`}>
-          {task.subject}
+          {t(task.subject)}
         </p>
         <div className="flex-1" />
         <span
@@ -43,9 +44,9 @@ export function CalendarTaskRow({ task, last }: CalendarTaskRowProps) {
       <div className="flex gap-4">
         <span className="flex items-center gap-[5px] text-[10px] text-muted-2">
           <Clock size={9} className="text-muted-4" aria-hidden />
-          {task.dueTime || 'All day'}
+          {task.dueTime || t('All day')}
         </span>
-        <span className="font-display text-[10px] text-muted-2">{task.timeEst}</span>
+        <span className="font-display text-[10px] text-muted-2">{formatDuration(task.timeEst, language)}</span>
       </div>
     </article>
   );

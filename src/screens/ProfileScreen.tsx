@@ -8,7 +8,7 @@ import { useLanguage } from '../lib/language';
 import type { Course, Kpi, ProfileSection, SettingItem, Task } from '../types';
 
 // Статистика считается из задач ТЕКУЩЕГО пользователя, а не из демо-данных.
-function buildKpis(tasks: Task[]): Kpi[] {
+function buildKpis(tasks: Task[], t: (value: string) => string): Kpi[] {
     const done = tasks.filter((task) => task.status === 'Done').length;
     const open = tasks.length - done;
     const urgentOpen = tasks.filter((task) => task.urgent && task.status !== 'Done').length;
@@ -19,14 +19,14 @@ function buildKpis(tasks: Task[]): Kpi[] {
     const from = toIsoDate(now.getFullYear(), now.getMonth(), now.getDate());
     const to = toIsoDate(weekAhead.getFullYear(), weekAhead.getMonth(), weekAhead.getDate());
     const dueSoon = tasks.filter(
-        (task) => task.status !== 'Done' && task.dueDate >= from && task.dueDate <= to,
+        (task) => task.status !== 'Done' && task.dueDate !== null && task.dueDate >= from && task.dueDate <= to,
     ).length;
 
     return [
-        { label: 'Tasks Completed', value: String(done), sub: `Of ${tasks.length} total` },
-        { label: 'Open Tasks', value: String(open), sub: `${urgentOpen} urgent`, accent: true },
-        { label: 'Completion Rate', value: `${rate}%`, sub: 'All time' },
-        { label: 'Due in 7 Days', value: String(dueSoon), sub: 'Not completed yet' },
+        { label: t('Tasks Completed'), value: String(done), sub: `${t('Of')} ${tasks.length} ${t('total')}` },
+        { label: t('Open Tasks'), value: String(open), sub: `${urgentOpen} ${t('urgent')}`, accent: true },
+        { label: t('Completion Rate'), value: `${rate}%`, sub: t('All time') },
+        { label: t('Due in 7 Days'), value: String(dueSoon), sub: t('Not completed yet') },
     ];
 }
 
@@ -51,13 +51,13 @@ interface ProfileScreenProps {
 export function ProfileScreen({ tasks, settings, onToggleSetting, session }: ProfileScreenProps) {
     const [section, setSection] = useState<ProfileSection>('kpis');
     const { language, setLanguage, t } = useLanguage();
-    const kpis = useMemo(() => buildKpis(tasks), [tasks]);
+    const kpis = useMemo(() => buildKpis(tasks, t), [tasks, t]);
     const courses = useMemo(() => buildCourses(tasks), [tasks]);
 
     // Достаем реальные данные из сессии Supabase
-    const email = session?.user?.email || 'No email';
+    const email = session?.user?.email || t('No email');
     // Юзернейм берем из метаданных (тот, что вводили при регистрации)
-    const username = session?.user?.user_metadata?.username || 'Student';
+    const username = session?.user?.user_metadata?.username || t('Student');
 
     // Генерируем инициалы из первых двух букв юзернейма (или одну, если он короткий)
     const initials = username.substring(0, 2).toUpperCase();
@@ -66,7 +66,7 @@ export function ProfileScreen({ tasks, settings, onToggleSetting, session }: Pro
     const handleLogout = async () => {
         const { error } = await supabase.auth.signOut();
         if (error) {
-            alert(`Ошибка при выходе: ${error.message}`);
+            alert(`${t('Sign out failed')}: ${error.message}`);
         }
     };
 
@@ -83,7 +83,7 @@ export function ProfileScreen({ tasks, settings, onToggleSetting, session }: Pro
                 }
             />
 
-            <div className="grid shrink-0 grid-cols-2 border-b border-ui" role="tablist" aria-label="Profile sections">
+            <div className="grid shrink-0 grid-cols-2 border-b border-ui" role="tablist" aria-label={t('STUDENT PROFILE')}>
                 {([
                     { id: 'kpis', label: 'PERFORMANCE' },
                     { id: 'courses', label: 'COURSES' },
@@ -106,16 +106,16 @@ export function ProfileScreen({ tasks, settings, onToggleSetting, session }: Pro
             </div>
 
             {section === 'kpis' ? (
-                <section className="grid shrink-0 grid-cols-2 gap-3 px-6 py-5" aria-label="Performance">
+                <section className="grid shrink-0 grid-cols-2 gap-3 px-6 py-5" aria-label={t('PERFORMANCE')}>
                     {kpis.map((kpi) => (
                         <KpiCard key={kpi.label} kpi={kpi} />
                     ))}
                 </section>
             ) : (
-                <section className="shrink-0 px-6" aria-label="Courses">
+                <section className="shrink-0 px-6" aria-label={t('COURSES')}>
                     {courses.length === 0 ? (
                         <p className="py-10 text-center font-display text-[13px] text-muted-4">
-                            No courses yet — add a task to see it here
+                            {t('No courses yet — add a task to see it here')}
                         </p>
                     ) : (
                         courses.map((course, index) => (
@@ -126,9 +126,9 @@ export function ProfileScreen({ tasks, settings, onToggleSetting, session }: Pro
                                 }`}
                             >
                                 <div>
-                                    <p className="font-display text-sm font-semibold text-charcoal">{course.subject}</p>
+                                    <p className="font-display text-sm font-semibold text-charcoal">{t(course.subject)}</p>
                                     <p className="mt-0.5 text-[11px] text-muted-2">
-                                        {course.open} task{course.open === 1 ? '' : 's'} open
+                                        {course.open} {t(course.open === 1 ? 'task open' : 'tasks open')}
                                     </p>
                                 </div>
                                 <div className="rounded-sm border border-charcoal px-3 py-[5px]">
@@ -144,7 +144,7 @@ export function ProfileScreen({ tasks, settings, onToggleSetting, session }: Pro
 
             <div className="h-2 shrink-0 border-y border-row bg-surface-2" />
 
-            <section className="shrink-0 px-6" aria-label="Settings">
+            <section className="shrink-0 px-6" aria-label={t('SETTINGS')}>
                 <p className="type-label pb-2 pt-4">{t('SETTINGS')}</p>
                 {settings.map((item) => (
                     <div
@@ -177,9 +177,7 @@ export function ProfileScreen({ tasks, settings, onToggleSetting, session }: Pro
                     onClick={handleLogout}
                     className="flex w-full items-center justify-between py-3.5 text-left border-transparent transition-colors hover:opacity-80"
                 >
-          <span className="font-body text-[13px] font-medium text-accent-red">
-            Выйти из аккаунта
-          </span>
+          <span className="font-body text-[13px] font-medium text-accent-red">{t('Sign out')}</span>
                     <span className="font-body text-xs text-accent-red">→</span>
                 </button>
             </section>

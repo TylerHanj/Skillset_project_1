@@ -1,5 +1,6 @@
 import { ChevronLeft, ChevronRight } from 'lucide-react';
-import { buildMonthGrid, MONTHS_SHORT, WEEKDAYS_SHORT } from '../lib/calendar';
+import { buildMonthGrid, formatMonthName, formatWeekdays } from '../lib/calendar';
+import { useLanguage } from '../lib/language';
 
 interface MiniCalendarProps {
   year: number;
@@ -18,25 +19,27 @@ export function MiniCalendar({
   onNextMonth,
   onSelectDay,
 }: MiniCalendarProps) {
+  const { language, t } = useLanguage();
   const grid = buildMonthGrid(year, month);
+  const weekdays = formatWeekdays(language);
 
   return (
     <div>
       <div className="mb-2 flex items-center justify-between">
         <button
           type="button"
-          aria-label="Previous month"
+          aria-label={t('Previous month')}
           onClick={onPrevMonth}
           className="flex h-6 w-6 items-center justify-center rounded-sm border-hairline border-muted-4"
         >
           <ChevronLeft size={12} className="text-slate" />
         </button>
         <p className="font-display text-[11px] font-bold tracking-label text-charcoal">
-          {MONTHS_SHORT[month].toUpperCase()} {year}
+          {formatMonthName(year, month, language, 'short')}
         </p>
         <button
           type="button"
-          aria-label="Next month"
+          aria-label={t('Next month')}
           onClick={onNextMonth}
           className="flex h-6 w-6 items-center justify-center rounded-sm border-hairline border-muted-4"
         >
@@ -45,7 +48,7 @@ export function MiniCalendar({
       </div>
 
       <div className="mb-1 grid grid-cols-7">
-        {WEEKDAYS_SHORT.map((day, index) => (
+        {weekdays.map((day, index) => (
           <span
             key={`${day}-${index}`}
             className={`pb-[3px] text-center font-display text-[9px] font-semibold tracking-wide ${

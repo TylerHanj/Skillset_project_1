@@ -23,6 +23,7 @@ function AIAvatar() {
 
 function MessageBubble({ message }: MessageBubbleProps) {
   const isAI = message.role === 'ai';
+  const { t } = useLanguage();
 
   return (
     <article className={`flex flex-col gap-1 ${isAI ? 'items-start' : 'items-end'}`}>
@@ -30,7 +31,7 @@ function MessageBubble({ message }: MessageBubbleProps) {
         <div className="mb-0.5 flex items-center gap-2">
           <AIAvatar />
           <span className="font-display text-[9px] font-bold tracking-wider text-muted">
-            STUDY AI · {message.time}
+            {t('Study AI')} · {message.time}
           </span>
         </div>
       ) : null}
@@ -117,7 +118,7 @@ export function AIChatBox({ messages, onSend, loading }: AIChatBoxProps) {
         }}
       >
         <label className="sr-only" htmlFor="chat-input">
-          Message
+          {t('Message')}
         </label>
         <div className="flex flex-1 items-center rounded-sm border border-border px-3.5 py-2.5">
           <textarea
@@ -139,7 +140,7 @@ export function AIChatBox({ messages, onSend, loading }: AIChatBoxProps) {
           type="submit"
           className="shrink-0 rounded-sm bg-blue-ink px-[18px] py-2.5 font-display text-[11px] font-bold tracking-wide text-white"
         >
-          SEND
+          {t('SEND')}
         </button>
       </form>
     </div>

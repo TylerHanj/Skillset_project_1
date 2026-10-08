@@ -1,7 +1,7 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { X } from 'lucide-react';
 import { useLanguage } from '../lib/language';
-import { formatDueLabel, toIsoDate } from '../lib/calendar';
+import { formatDueLabel, formatDuration, formatTimeValue, toIsoDate } from '../lib/calendar';
 import type { NewTaskInput, TaskStatus } from '../types';
 import { WheelPicker } from './WheelPicker';
 import { MiniCalendar } from './MiniCalendar';
@@ -29,7 +29,7 @@ interface AddTaskSheetProps {
 
 export function AddTaskSheet({ open, onClose, onSubmit }: AddTaskSheetProps) {
   const now = new Date();
-  const { t } = useLanguage();
+  const { language, t } = useLanguage();
   const [categories, setCategories] = useState<string[]>([]);
   const [categoryInput, setCategoryInput] = useState('');
   const [title, setTitle] = useState('');
@@ -42,8 +42,20 @@ export function AddTaskSheet({ open, onClose, onSubmit }: AddTaskSheetProps) {
   const [dueTime, setDueTime] = useState('9:00 AM');
   const [error, setError] = useState('');
 
-  const timeValues=Array.from({length:96},(_,i)=>{const h=Math.floor(i/4),m=(i%4)*15;return String(h%12||12)+':'+String(m).padStart(2,'0')+' '+(h<12?'AM':'PM')});
-  const estimateValues=Array.from({length:48},(_,i)=>{const n=(i+1)*15,h=Math.floor(n/60),m=n%60;return h===0?m+'m':h+'h '+String(m).padStart(2,'0')+'m'});
+  const timeOptions = useMemo(() => Array.from({ length: 96 }, (_, index) => {
+    const hour = Math.floor(index / 4);
+    const minute = (index % 4) * 15;
+    const value = `${String(hour % 12 || 12)}:${String(minute).padStart(2, '0')} ${hour < 12 ? 'AM' : 'PM'}`;
+    return { value, label: formatTimeValue(hour, minute, language) };
+  }), [language]);
+  const estimateOptions = useMemo(() => Array.from({ length: 48 }, (_, index) => {
+    const totalMinutes = (index + 1) * 15;
+    const hours = Math.floor(totalMinutes / 60);
+    const minutes = totalMinutes % 60;
+    const value = hours === 0 ? `${minutes}m` : `${hours}h ${String(minutes).padStart(2, '0')}m`;
+    return { value, label: formatDuration(value, language) };
+  }), [language]);
+  const selectedTimeLabel = timeOptions.find((option) => option.value === dueTime)?.label ?? dueTime;
   function addCategory(){const v=categoryInput.trim().replace(/,$/,'');if(v&&!categories.some(x=>x.toLowerCase()===v.toLowerCase()))setCategories(xs=>[...xs,v]);setCategoryInput('')}
 
   useEffect(() => {
@@ -90,12 +102,16 @@ export function AddTaskSheet({ open, onClose, onSubmit }: AddTaskSheetProps) {
     onSubmit({
       subject: categories.map(x=>x.trim().toUpperCase()).join(', ') || 'GENERAL',
       title: title.trim(),
-      due: formatDueLabel(calYear, calMonth, calDay, dueTime),
+      due: formatDueLabel(calYear, calMonth, calDay, selectedTimeLabel, language),
       dueDate,
       dueTime,
       status,
       urgent,
       timeEst,
+      category: 'general',
+      hasTime: true,
+      isCompleted: status === 'Done',
+      createdAt: new Date().toISOString(),
     });
     reset();
   }
@@ -175,7 +191,7 @@ export function AddTaskSheet({ open, onClose, onSubmit }: AddTaskSheetProps) {
               }`}
             >
               {calDay
-                ? formatDueLabel(calYear, calMonth, calDay, dueTime)
+                ? formatDueLabel(calYear, calMonth, calDay, selectedTimeLabel, language)
                 : t('Select a date below')}
             </div>
 
@@ -188,7 +204,7 @@ export function AddTaskSheet({ open, onClose, onSubmit }: AddTaskSheetProps) {
               onSelectDay={setCalDay}
             />
 
-            <div className="mt-3"><p className="mb-2 font-display text-[9px] font-semibold tracking-wider text-muted-2">{t('TIME')}</p><WheelPicker values={timeValues} value={dueTime} onChange={setDueTime} label={t('TIME')} hint={t('Scroll to select time')}/></div>
+            <div className="mt-3"><p className="mb-2 font-display text-[9px] font-semibold tracking-wider text-muted-2">{t('TIME')}</p><WheelPicker options={timeOptions} value={dueTime} onChange={setDueTime} label={t('TIME')} hint={t('Scroll to select time')}/></div>
           </FieldBlock>
 
           <FieldBlock label={t('STATUS')}>
@@ -218,7 +234,7 @@ export function AddTaskSheet({ open, onClose, onSubmit }: AddTaskSheetProps) {
             </div>
           </FieldBlock>
 
-          <FieldBlock label={t('TIME ESTIMATE')}><WheelPicker values={estimateValues} value={timeEst} onChange={setTimeEst} label={t('TIME ESTIMATE')} hint={t('Scroll to select an estimate')}/></FieldBlock>
+          <FieldBlock label={t('TIME ESTIMATE')}><WheelPicker options={estimateOptions} value={timeEst} onChange={setTimeEst} label={t('TIME ESTIMATE')} hint={t('Scroll to select an estimate')}/></FieldBlock>
 
           <div className="flex items-center justify-between">
             <div>
